@@ -136,4 +136,19 @@ library BN256G1 {
   }
 
 
+  /// @dev Custom pairing check function
+  /// returns true if == 0,
+  /// returns false if != 0,
+  /// reverts with "Wrong pairing" if invalid pairing
+  function bn256CustomCheckPairing(uint256[12] memory input) public view returns (bool) {
+    assembly {
+      let success := staticcall(gas(), 0x08, input, 0x0180, input, 0x20)
+      if success {
+        return (input, 0x20)
+      }
+    }
+    revert("Wrong pairing");
+  }
+
+
 }

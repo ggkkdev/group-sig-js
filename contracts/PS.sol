@@ -52,57 +52,9 @@ contract PS {
             (e1a0, e1a1) = BN256G1.add([ysmink0, ysmink1, xc0, xc1]);
         }
         (uint sigma2c0, uint sigma2c1) = BN256G1.multiply([sigma2.x, sigma2.y, c]);
-        (bool result) = checkPairing([e1a0, e1a1, sigma1.x[0], sigma1.x[1], sigma1.y[0], sigma1.y[1], sigma2c0, sigma2c1, gtildeneg.x[0], gtildeneg.x[1], gtildeneg.y[0], gtildeneg.y[1]]);
+        (bool result) = BN256G1.bn256CheckPairing([e1a0, e1a1, sigma1.x[0], sigma1.x[1], sigma1.y[0], sigma1.y[1], sigma2c0, sigma2c1, gtildeneg.x[0], gtildeneg.x[1], gtildeneg.y[0], gtildeneg.y[1]]);
         emit Verification(c, s, ymink, sigma2, sigma1, result);
         return result;
     }
-
-
-    /// @dev pairing check function
-   /// returns true if == 0,
-   /// returns false if != 0,
-   /// reverts with "Wrong pairing" if invalid pairing
-    function run(uint256[12] memory input) public view returns (bool) {
-        assembly {
-            let success := staticcall(gas(), 0x08, input, 0x0180, input, 0x20)
-            if success {
-                return (input, 0x20)
-            }
-        }
-        revert("Wrong pairing");
-    }
-
-
-
-    /// @dev Checks if e(P, Q) = e (R,S).
-    /// @param input: 12 values of 256 bits each:
-    ///  *) x-coordinate of point P
-    ///  *) y-coordinate of point P
-    ///  *) x real coordinate of point Q
-    ///  *) x imaginary coordinate of point Q
-    ///  *) y real coordinate of point Q
-    ///  *) y imaginary coordinate of point Q
-    ///  *) x-coordinate of point R
-    ///  *) y-coordinate of point R
-    ///  *) x real coordinate of point S
-    ///  *) x imaginary coordinate of point S
-    ///  *) y real coordinate of point S
-    ///  *) y imaginary coordinate of point S
-    /// @return true if e(P, Q) = e (R,S).
-    function checkPairing(uint256[12] memory input) public returns (bool) {
-        uint256[1] memory result;
-        bool success;
-        assembly {
-        // 0x08     id of the bn256CheckPairing precompile    (checking the elliptic curve pairings)
-        // 0        number of ether to transfer
-        // 0        since we have an array of fixed length, our input starts in 0
-        // 384      size of call parameters, i.e. 12*256 bits == 384 bytes
-        // 32       size of result (one 32 byte boolean!)
-            success := call(sub(gas(), 2000), 0x08, 0, input, 384, result, 32)
-        }
-        require(success, "elliptic curve pairing failed");
-        return result[0] == 1;
-    }
-
 
 }
