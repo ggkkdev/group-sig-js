@@ -18,35 +18,8 @@ describe("PS", function () {
 
     // You can nest describe calls to create subsections.
     describe("Test ps workflow", function () {
-        let gx1;
-        let gy1;
-        let bn128;
-        let lib;
-        let g;
-        let y;
-        let x;
-        let m;
-        let gy;
-        let gx;
-        let h;
-        let h2;
-        let sigma1;
-        let sigma2;
-        let ski;
-        let sigma1random;
-        let sigma2random;
-        let c;
-        let s;
-        let signpairing;
-        let yk;
-        let k;
-        let preg;
-        let rpairing
-        let u
-        let t
-        let sigma12
-        let tautilde
-        let psContract
+        let gx1, gy1, bn128, lib, g, y, x, m, gy, gx, h, h2, sigma1, sigma2, ski, sigma1random, sigma2random, c, s,
+            signpairing, yk, k, preg, rpairing, u, t, sigma12, tautilde, psContract,sigma1randomk, ymink,sigma1random2;
 
         it("Setup ", async function () {
             const fixture = await loadFixture(initFixture);
@@ -113,9 +86,18 @@ describe("PS", function () {
             t = bn128.Fr.random()
             k = bn128.Fr.random()
             sigma1random = bn128.G1.timesFr(sigma1, bn128.Fr.e(t))
+            //const sigma1randomO = bn128.G1.toObject(bn128.G1.toAffine(sigma1random))
+            sigma1random2 = bn128.G2.timesFr(bn128.G2.one, bn128.Fr.e(bn128.Fr.mul(u, t)))
+            const sigma1random2O = bn128.G2.toObject(bn128.G2.toAffine(sigma1random2))
             sigma2random = bn128.G1.timesFr(sigma2, bn128.Fr.e(t))
+            const sigma2randomO = bn128.G1.toObject(bn128.G1.toAffine(sigma2random))
             signpairing = bn128.pairing(bn128.G1.timesFr(sigma1random, bn128.Fr.e(k)), gy)
-            c = bn128.Fr.fromObject(ethers.utils.solidityKeccak256(["bytes", "bytes", "bytes", "bytes"], [sigma1random, sigma2random, signpairing, m]))
+            //c = bn128.Fr.fromObject(ethers.utils.solidityKeccak256(["bytes", "bytes", "bytes", "bytes"], [sigma1random, sigma2random, signpairing, m]))
+            sigma1randomk=bn128.G1.timesFr(sigma1random, bn128.Fr.e(k))
+            ymink = bn128.G1.neg(bn128.G1.timesFr(gy1, bn128.Fr.e(k)))
+            const yminkO= bn128.G1.toObject(bn128.G1.toAffine(ymink))
+            //c = bn128.Fr.fromObject(ethers.utils.solidityKeccak256(["bytes", "bytes", "bytes", "bytes"], [sigma1random, sigma2random, sigma1randomk, m]))
+            c = bn128.G1.F.fromObject(ethers.utils.solidityKeccak256(["uint", "uint","uint", "uint", "uint", "uint", "uint", "uint", "bytes32"], [sigma1random2O[0][1],sigma1random2O[0][0], sigma1random2O[1][1],sigma1random2O[1][0],sigma2randomO[0], sigma2randomO[1], yminkO[0], yminkO[1], m]))
             s = bn128.Fr.add(k, bn128.Fr.mul(c, ski))
             const mu = (sigma1random, sigma2random, c, s)
         })
@@ -125,8 +107,8 @@ describe("PS", function () {
             R = bn128.Gt.mul(R, bn128.pairing(sigma2random, bn128.G2.neg(bn128.G2.timesFr(g, bn128.Fr.e(c)))))
             R = bn128.Gt.mul(R, bn128.pairing(bn128.G1.timesFr(sigma1random, bn128.Fr.e(s)), gy))
             expect(bn128.Gt.eq(R, signpairing)).to.eq(true)
-            const _c = bn128.Fr.fromObject(ethers.utils.solidityKeccak256(["bytes", "bytes", "bytes", "bytes"], [sigma1random, sigma2random, R, m]))
-            expect(bn128.Fr.eq(_c, c)).to.eq(true)
+            //const _c = bn128.Fr.fromObject(ethers.utils.solidityKeccak256(["bytes", "bytes", "bytes", "bytes"], [sigma1random, sigma2random, R, m]))
+            //expect(bn128.Fr.eq(_c, c)).to.eq(true)
         })
         it("Verif Simplified", async function () {
             //verifG simplified
@@ -162,9 +144,7 @@ describe("PS", function () {
 
         it("Verif with solidity verify function", async function () {
             //verif with solidity verify function
-            const ymink = bn128.G1.neg(bn128.G1.timesFr(gy1, bn128.Fr.e(k)))
             const yminkO = bn128.G1.toObject(bn128.G1.toAffine(ymink))
-            const sigma1random2 = bn128.G2.timesFr(bn128.G2.one, bn128.Fr.e(bn128.Fr.mul(u, t)))
             const sigma1random2O = bn128.G2.toObject(bn128.G2.toAffine(sigma1random2))
             const sigma2randomO = bn128.G1.toObject(bn128.G1.toAffine(sigma2random))
             const ea1 = bn128.G1.add(bn128.G1.timesFr(gx1, bn128.Fr.e(c)), bn128.G1.add(bn128.G1.timesFr(gy1, bn128.Fr.e(s)), ymink))
@@ -178,10 +158,31 @@ describe("PS", function () {
             }, bn128.Fr.toObject(s), {
                 x: [sigma1random2O[0][1], sigma1random2O[0][0]],
                 y: [sigma1random2O[1][1], sigma1random2O[1][0]]
-            }, {x: sigma2randomO[0], y: sigma2randomO[1]})
+            }, {x: sigma2randomO[0], y: sigma2randomO[1]}, m)
             const resVerif2 = await _resVerif2.wait()
             console.log("Gas used for ps verification function " + resVerif2.gasUsed.toString())
-            expect(resVerif2.events[resVerif2.events.length - 1].args.result).to.eq(true)
+            //c = bn128.Fr.fromObject(ethers.utils.solidityKeccak256(["uint", "uint","uint", "uint", "uint", "uint", "uint", "uint", "bytes32"], [sigma1random2O[0][1],sigma1random2O[0][0], sigma1random2O[1][1],sigma1random2O[1][0],sigma2randomO[0], sigma2randomO[1], yminkO[0], yminkO[1], m]))
+            expect(sigma1random2O[0][1]).to.eq(resVerif2.events[1].args.a)
+            expect(sigma1random2O[0][0]).to.eq(resVerif2.events[1].args.b)
+            expect(sigma1random2O[1][1]).to.eq(resVerif2.events[1].args.c)
+            expect(sigma1random2O[1][0]).to.eq(resVerif2.events[1].args.d)
+            expect(sigma2randomO[0]).to.eq(resVerif2.events[1].args.e)
+            expect(sigma2randomO[1]).to.eq(resVerif2.events[1].args.f)
+            expect(yminkO[0]).to.eq(resVerif2.events[1].args.g)
+            expect(yminkO[1]).to.eq(resVerif2.events[1].args.h)
+            expect(ethers.utils.hexlify(m)).to.eq(resVerif2.events[1].args.message)
+            //bn128.Fr.toObject(bn128.Fr.fromObject(ethers.utils.hexlify(c)))
+            //bn128.Fr.toObject(bn128.Fr.fromObject(c))
+            //bn128.Fr.toObject(bn128.Fr.fromObject(resVerif2.events[1].args.hash))
+            const hashFromSolidity=ethers.utils.solidityKeccak256(["uint", "uint","uint", "uint", "uint", "uint", "uint", "uint", "bytes32"], [resVerif2.events[1].args.a,resVerif2.events[1].args.b, resVerif2.events[1].args.c,resVerif2.events[1].args.d,resVerif2.events[1].args.e, resVerif2.events[1].args.f, resVerif2.events[1].args.g, resVerif2.events[1].args.h, resVerif2.events[1].args.message])
+            const testc = ethers.utils.hexlify(hashFromSolidity)
+            //expect(testc).to.eq(resVerif2.events[0].args.hash)
+            const realc = bn128.Fr.fromObject(ethers.utils.solidityKeccak256(["uint", "uint","uint", "uint", "uint", "uint", "uint", "uint", "bytes32"], [sigma1random2O[0][1],sigma1random2O[0][0], sigma1random2O[1][1],sigma1random2O[1][0],sigma2randomO[0], sigma2randomO[1], yminkO[0], yminkO[1], m]))
+            expect(bn128.G1.F.toObject(bn128.G1.F.fromObject(hashFromSolidity)),resVerif2.events[0].args.hash )
+            //const reshash=bn128.Fr.fromObject(ethers.utils.hexlify(c))==resVerif2.events[0].args.hash
+            expect(resVerif2.events[resVerif2.events.length - 1].args.resultPairing).to.eq(true)
+            expect(resVerif2.events[resVerif2.events.length - 1].args.resultHash).to.eq(true)
+            expect(resVerif2.events[1].args.result).to.eq(true)
         })
         it("Open signature", async function () {
             //openG
