@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "./EllipticCurve.sol";
-
-
 /**
  * @title BN256G1 Curve Library
  * @dev Library providing arithmetic operations over G1 in bn256.
@@ -74,21 +71,6 @@ library BN256G1 {
     return (result[0], result[1]);
   }
 
-  /// @dev Checks if P is on G1 using the EllipticCurve library.
-  /// @param point: 2 values of 256 bits each:
-  ///  *) x-coordinate of point P
-  ///  *) y-coordinate of point P
-  /// @return true if P is in G1.
-  function isOnCurve(uint[2] memory point) internal pure returns (bool) {
-    // checks if the given point is a valid point from the first elliptic curve group
-    // uses the EllipticCurve library
-    return EllipticCurve.isOnCurve(
-      point[0],
-      point[1],
-      AA,
-      BB,
-      PP);
-  }
 
   /// @dev Checks if e(P, Q) = e (R,S).
   /// @param input: 12 values of 256 bits each:
@@ -153,65 +135,5 @@ library BN256G1 {
     return result[0] == 1;
   }
 
-  /// @dev Function to transform compressed bytes into a x and a y coordinate in the curve.
-  /// @param _point The point bytes
-  /// @return The coordinates `x` and `y` in an array
-  function fromCompressed(bytes memory _point) internal pure returns (uint256, uint256) {
-    require(_point.length == 33, "invalid encoding");
-    uint8 sign;
-    uint256 x;
-    assembly {
-      sign := mload(add(_point, 1))
-	    x := mload(add(_point, 33))
-    }
-
-    return (
-      x, deriveY(
-        sign,
-        x)
-      );
-  }
-
-  /// @dev Function to convert a `Hash(msg|DATA)` to a point in the curve as defined in [VRF-draft-04](https://tools.ietf.org/pdf/draft-irtf-cfrg-vrf-04).
-  /// @param _message The message used for computing the VRF
-  /// @return The hash point in affine coordinates
-  function hashToTryAndIncrement(bytes memory _message) internal pure returns (uint, uint) {
-    // Find a valid EC point
-    // Loop over counter ctr starting at 0x00 and do hash
-    for (uint8 ctr = 0; ctr < 256; ctr++) {
-      // Counter update
-      // c[cLength-1] = byte(ctr);
-      bytes32 sha = sha256(abi.encodePacked(_message, ctr));
-      // Step 4: arbitraty string to point and check if it is on curve
-      uint hPointX = uint256(sha);
-      // Avoid hashes that are above the last multiple of _PP, otherwise odds are biased
-      if (hPointX >= LAST_MULTIPLE_OF_PP_LOWER_THAN_2_256) {
-        continue;
-      }
-      // Do the modulus to avoid excesive iterations of the loop
-      hPointX = hPointX % PP;
-      uint hPointY = deriveY(2, hPointX);
-      // we do not use the subsidized one as it appears to consume more gas
-      if (isOnCurve([hPointX,hPointY])) {
-        // Step 5 (omitted): calculate H (cofactor is 1 on bn256g1)
-        // If H is not "INVALID" and cofactor > 1, set H = cofactor * H
-        return (hPointX, hPointY);
-      }
-    }
-    revert("No valid point was found");
-  }
-
-  /// @dev Function to derive the `y` coordinate given the `x` coordinate and the parity byte (`0x03` for odd `y` and `0x04` for even `y`).
-  /// @param _yByte The parity byte following the ec point compressed format
-  /// @param _x The coordinate `x` of the point
-  /// @return The coordinate `y` of the point
-  function deriveY(uint8 _yByte, uint256 _x) internal pure returns (uint256) {
-    return EllipticCurve.deriveY(
-      _yByte,
-      _x,
-      AA,
-      BB,
-      PP);
-  }
 
 }
