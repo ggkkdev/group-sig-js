@@ -390,10 +390,6 @@ describe("BBS", function () {
             expect(bn128.Gt.eq(lpairing, rpairing)).to.eq(true)
 
             //verifG helped
-
-            /*            expect(bn128.Gt.eq(bn128.pairing(gy1, bn128.G2.one), bn128.pairing(bn128.G1.one, gy))).to.eq(true)
-                        expect(bn128.Gt.eq(bn128.pairing(gx1, bn128.G2.one), bn128.pairing(bn128.G1.one, gx))).to.eq(true)
-                        expect(bn128.Gt.eq(bn128.pairing(bn128.G1.timesFr(gx1, c), bn128.G2.one), bn128.pairing(bn128.G1.one, bn128.G2.timesFr(gx, c)))).to.eq(true)*/
             const lpairingTest = bn128.pairing(sigma1random, bn128.G2.add(yk, gx))
             const rpairingTest = bn128.pairing(bn128.G1.timesFr(sigma1random, bn128.Fr.e(bn128.Fr.add(bn128.Fr.mul(y, k), x))), g)
             expect(bn128.Gt.eq(lpairingTest, rpairingTest)).to.eq(true)
@@ -410,42 +406,11 @@ describe("BBS", function () {
             const e1b = bn128.G2.toObject(bn128.G2.toAffine(bn128.G2.timesFr(sigma12, bn128.Fr.e(t))))
             const e2a = bn128.G1.toObject(bn128.G1.toAffine(bn128.G1.timesFr(sigma2random, bn128.Fr.e(c))))
             const e2b = bn128.G2.toObject(bn128.G2.toAffine(g))
-            /*            let inputs = []
-                        inputs[0] = e1a[0]
-                        inputs[1] = e1a[1]
-                        inputs[2] = e1b[0][1]
-                        inputs[3] = e1b[0][0]
-                        inputs[4] = e1b[1][1]
-                        inputs[5] = e1b[1][0]
-                        inputs[6] = e2a[0]
-                        inputs[7] = e2a[1]
-                        inputs[8] = e2b[0][1]
-                        inputs[9] = e2b[0][0]
-                        inputs[10] = e2b[1][1]
-                        inputs[11] = e2b[1][0]*/
+
             const result = await bbs.run([e1a[0], e1a[1], e1b[0][1], e1b[0][0], e1b[1][1], e1b[1][0], e2a[0], e2a[1], e2b[0][1], e2b[0][0], e2b[1][1], e2b[1][0]])
             expect(result).to.eq(true)
 
-            const resIsoncurve = await ps.isOnCurve([bn128.G1.toObject(bn128.G1.toAffine(gy1))[0], bn128.G1.toObject(bn128.G1.toAffine(gy1))[1]])
-            expect(resIsoncurve).to.eq(true)
-            const resmul = await ps.multiply([bn128.G1.toObject(bn128.G1.toAffine(gy1))[0], bn128.G1.toObject(bn128.G1.toAffine(gy1))[1], 2])
-            const resmul2 = await resmul.wait();
-            const x0 = bn128.Fr.toObject(bn128.Fr.fromObject(resmul2.events[0].args.x0.toHexString()))
-            const x1 = bn128.Fr.toObject(bn128.Fr.fromObject(resmul2.events[0].args.x1.toHexString()))
-            const gyk1 = bn128.G1.toObject(bn128.G1.toAffine(bn128.G1.timesFr(gy1, bn128.Fr.e(2))))
-            expect(gyk1[0]).to.eq(x0)
-            expect(gyk1[1]).to.eq(x1)
-            const resadd = await ps.add([bn128.G1.toObject(bn128.G1.toAffine(gy1))[0], bn128.G1.toObject(bn128.G1.toAffine(gy1))[1], bn128.G1.toObject(bn128.G1.toAffine(gx1))[0], bn128.G1.toObject(bn128.G1.toAffine(gx1))[1]])
-            const resadd2 = await resadd.wait();
-            const x0Add = bn128.Fr.toObject(bn128.Fr.fromObject(resadd2.events[0].args.x0.toHexString()))
-            const x1Add = bn128.Fr.toObject(bn128.Fr.fromObject(resadd2.events[0].args.x1.toHexString()))
-            const gygx = bn128.G1.toObject(bn128.G1.toAffine(bn128.G1.add(gy1, gx1)))
-            expect(gygx[0]).to.eq(x0Add)
-            expect(gygx[1]).to.eq(x1Add)
-            //bn128.G1.toObject(bn128.G1.toAffine(bn128.G1.timesFr(bn128.G1.one,bn128.Fr.e(2))))
-            //bn128.G1.toObject(bn128.G1.toAffine(bn128.G1.timesScalar(bn128.G1.one,2))))
-
-            //const yk1 = bn128.G1.timesFr(gy, k)
+            //verif with solidity verify function
             const ymink = bn128.G1.neg(bn128.G1.timesFr(gy1, bn128.Fr.e(k)))
             const yminkO = bn128.G1.toObject(bn128.G1.toAffine(ymink))
             const sigma1random2 = bn128.G2.timesFr(bn128.G2.one, bn128.Fr.e(bn128.Fr.mul(u, t)))
@@ -456,17 +421,6 @@ describe("BBS", function () {
             const sigma2randomc = bn128.G1.timesFr(sigma2random, bn128.Fr.e(c))
             const sigma2randomcO = bn128.G1.toObject(bn128.G1.toAffine(sigma2randomc))
 
-            const rpairingsol = bn128.pairing(sigma2randomc, g)
-            expect(bn128.Gt.eq(lpairingsol, rpairingsol)).to.eq(true)
-            const sigma2randomcneg = bn128.G1.neg(sigma2randomc)
-
-            const resPairingsol = await bbs.run([bn128.G1.toObject(bn128.G1.toAffine(ea1))[0], bn128.G1.toObject(bn128.G1.toAffine(ea1))[1],
-                bn128.G2.toObject(bn128.G2.toAffine(sigma1random2))[0][1], bn128.G2.toObject(bn128.G2.toAffine(sigma1random2))[0][0], bn128.G2.toObject(bn128.G2.toAffine(sigma1random2))[1][1], bn128.G2.toObject(bn128.G2.toAffine(sigma1random2))[1][0],
-                bn128.G1.toObject(bn128.G1.toAffine(sigma2randomcneg))[0], bn128.G1.toObject(bn128.G1.toAffine(sigma2randomcneg))[1],
-                bn128.G2.toObject(bn128.G2.toAffine(g))[0][1], bn128.G2.toObject(bn128.G2.toAffine(g))[0][0], bn128.G2.toObject(bn128.G2.toAffine(g))[1][1], bn128.G2.toObject(bn128.G2.toAffine(g))[1][0]
-            ])
-            expect(resPairingsol).to.eq(true)
-
             const _resVerif2 = await ps.verify(bn128.Fr.toObject(c), {
                 x: yminkO[0],
                 y: yminkO[1]
@@ -475,58 +429,8 @@ describe("BBS", function () {
                 y: [sigma1random2O[1][1], sigma1random2O[1][0]]
             }, {x: sigma2randomO[0], y: sigma2randomO[1]})
             const resVerif2 = await _resVerif2.wait()
+            console.log("Gas used for ps verification function"+resVerif2.gasUsed.toString())
             expect(resVerif2.events[resVerif2.events.length - 1].args.result).to.eq(true)
-
-            /*
-                        const ea1O = bn128.G1.toObject(bn128.G1.toAffine(ea1))
-                        const _e1a0=bn128.Fr.toObject(bn128.Fr.fromObject(resVerif2.events[0].args.x0.toHexString()))
-                        const _e1a1=bn128.Fr.toObject(bn128.Fr.fromObject(resVerif2.events[0].args.x1.toHexString()))
-                        expect(ea1O[0]).to.eq(_e1a0)
-                        expect(ea1O[1]).to.eq(_e1a1)
-                        const _sigma1rx0=bn128.Fr.toObject(bn128.Fr.fromObject(resVerif2.events[1].args.x0.toHexString()))
-                        const _sigma1rx1=bn128.Fr.toObject(bn128.Fr.fromObject(resVerif2.events[1].args.x1.toHexString()))
-                        expect(_sigma1rx0).to.eq(sigma1random2O[0][1])
-                        expect(_sigma1rx1).to.eq(sigma1random2O[0][0])
-                        const _sigma1ry0=bn128.Fr.toObject(bn128.Fr.fromObject(resVerif2.events[2].args.x0.toHexString()))
-                        const _sigma1ry1=bn128.Fr.toObject(bn128.Fr.fromObject(resVerif2.events[2].args.x1.toHexString()))
-                        expect(_sigma1ry0).to.eq(sigma1random2O[1][1])
-                        expect(_sigma1ry1).to.eq(sigma1random2O[1][0])
-                        const _sigma2c0=bn128.Fr.toObject(bn128.Fr.fromObject(resVerif2.events[3].args.x0.toHexString()))
-                        const _sigma2c1=bn128.Fr.toObject(bn128.Fr.fromObject(resVerif2.events[3].args.x1.toHexString()))
-                        expect(_sigma2c0).to.eq(sigma2randomcO[0])
-                        expect(_sigma2c1).to.eq(sigma2randomcO[1])
-            */
-
-
-            /*            const _resVerif = await ps.debug(bn128.Fr.toObject(c), {x: yminkO[0], y: yminkO[1]}, bn128.Fr.toObject(s), {
-                            x: [sigma1random2O[0][0], sigma1random2O[0][1]],
-                            y: [sigma1random2O[1][0], sigma1random2O[1][1]]
-                        }, {x: sigma2O[0], y: sigma2O[1]})
-                        const resVerif = await _resVerif.wait()*/
-            /*            const _xc0 = bn128.Fr.toObject(bn128.Fr.fromObject(resVerif.events[0].args.x0.toHexString()))
-                        const _xc1 = bn128.Fr.toObject(bn128.Fr.fromObject(resVerif.events[0].args.x1.toHexString()))
-                        const _ys0 = bn128.Fr.toObject(bn128.Fr.fromObject(resVerif.events[1].args.x0.toHexString()))
-                        const _ys1 = bn128.Fr.toObject(bn128.Fr.fromObject(resVerif.events[1].args.x1.toHexString()))
-                        const _ysmink0 = bn128.Fr.toObject(bn128.Fr.fromObject(resVerif.events[2].args.x0.toHexString()))
-                        const _ysmink1 = bn128.Fr.toObject(bn128.Fr.fromObject(resVerif.events[2].args.x1.toHexString()))*/
-            /*            const _ea10 = bn128.Fr.toObject(bn128.Fr.fromObject(resVerif.events[3].args.x0.toHexString()))
-                        const _ea11 = bn128.Fr.toObject(bn128.Fr.fromObject(resVerif.events[3].args.x1.toHexString()))*/
-            /*            await ps.verify(c, [yminkO[0], yminkO[1]], s, {
-                            x: [sigma1random2O[0][0], sigma1random2O[0][1]],
-                            y: [sigma1random2O[1][0], sigma1random2O[1][1]]
-                        }, {x: sigma2O[0], y: sigma2O[1]})*/
-            //const gx1c = bn128.G1.toObject(bn128.G1.toAffine(bn128.G1.timesFr(gx1, c)))
-            //const resgxc = await ps.multiply([bn128.G1.toObject(bn128.G1.toAffine(gx1))[0], bn128.G1.toObject(bn128.G1.toAffine(gx1))[1], bn128.Fr.toObject(c)])
-            /*            const resgxc = await ps.multiplyX( bn128.Fr.toObject(c))
-                        const resgxc2 = await resgxc.wait();
-                        const x0gxc = bn128.Fr.toObject(bn128.Fr.fromObject(resgxc2.events[0].args.x0.toHexString()))
-                        const x1gxc = bn128.Fr.toObject(bn128.Fr.fromObject(resgxc2.events[0].args.x1.toHexString()))
-                        const gxc = bn128.G1.toObject(bn128.G1.toAffine(bn128.G1.timesFr(gx1, c)))*/
-            /*            expect(gxc[0]).to.eq(x0gxc)
-                        expect(gxc[1]).to.eq(x1gxc)
-                        expect(_ea10).to.eq(ea1O[0])
-                        expect(_ea11).to.eq(ea1O[1])*/
-
 
             //openG
             let lopenpairing = bn128.pairing(sigma2random, g)

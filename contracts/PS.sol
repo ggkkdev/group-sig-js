@@ -100,12 +100,6 @@ contract PS {
             (e1a0, e1a1) = BN256G1.add([ysmink0, ysmink1, xc0, xc1]);
         }
         (uint sigma2c0, uint sigma2c1) = BN256G1.multiply([sigma2.x, sigma2.y, c]);
-        emit Debug(e1a0,e1a1);
-        emit Debug(sigma1.x[0],sigma1.x[1]);
-        emit Debug(sigma1.y[0],sigma1.y[1]);
-        emit Debug(sigma2c0,sigma2c1);
-        emit Debug(gtildeneg.x[0],gtildeneg.x[1]);
-        emit Debug(gtildeneg.y[0],gtildeneg.y[1]);
         (bool result) = checkPairing2([e1a0, e1a1, sigma1.x[0], sigma1.x[1], sigma1.y[0], sigma1.y[1], sigma2c0, sigma2c1, gtildeneg.x[0], gtildeneg.x[1], gtildeneg.y[0], gtildeneg.y[1]]);
         emit Verification(c, s, ymink, sigma2, sigma1, result);
         return result;
