@@ -17,71 +17,109 @@ describe("PS", function () {
     }
 
     // You can nest describe calls to create subsections.
-    describe("Deployment", function () {
+    describe("Test ps workflow", function () {
+        let gx1;
+        let gy1;
+        let bn128;
+        let lib;
+        let g;
+        let y;
+        let x;
+        let m;
+        let gy;
+        let gx;
+        let h;
+        let h2;
+        let sigma1;
+        let sigma2;
+        let ski;
+        let sigma1random;
+        let sigma2random;
+        let c;
+        let s;
+        let signpairing;
+        let yk;
+        let k;
+        let preg;
+        let rpairing
+        let u
+        let t
+        let sigma12
+        let tautilde
+        let psContract
 
-        it("ps signatures ", async function () {
-            const {bn128, lib} = await loadFixture(initFixture);
+        it("Setup ", async function () {
+            const fixture = await loadFixture(initFixture);
+            bn128 = fixture.bn128;
+            lib = fixture.lib
             //Setup
-            const preg = bn128.Fr.random()
-            const x = bn128.Fr.random()
-            const y = bn128.Fr.random()
-            const g = bn128.G2.timesFr(bn128.G2.one, bn128.Fr.e(preg))
-            const gx = bn128.G2.timesFr(g, bn128.Fr.e(x))
-            const gy = bn128.G2.timesFr(g, bn128.Fr.e(y))
+            preg = bn128.Fr.random()
+            x = bn128.Fr.random()
+            y = bn128.Fr.random()
+            g = bn128.G2.timesFr(bn128.G2.one, bn128.Fr.e(preg))
+            gx = bn128.G2.timesFr(g, bn128.Fr.e(x))
+            gy = bn128.G2.timesFr(g, bn128.Fr.e(y))
             //to help
-            const gy1 = bn128.G1.timesFr(bn128.G1.one, bn128.Fr.e(bn128.Fr.mul(y, preg)))
-            const gx1 = bn128.G1.timesFr(bn128.G1.one, bn128.Fr.e(bn128.Fr.mul(x, preg)))
+            gy1 = bn128.G1.timesFr(bn128.G1.one, bn128.Fr.e(bn128.Fr.mul(y, preg)))
+            gx1 = bn128.G1.timesFr(bn128.G1.one, bn128.Fr.e(bn128.Fr.mul(x, preg)))
             const gsk = (x, y)
             const gpk = (g, gx, gy)
-
+        })
+        it("Deploy PS contract ", async function () {
             //Deploy contract
             const gtildeneg = bn128.G2.toObject(bn128.G2.toAffine(bn128.G2.neg(g)))
             const gx1O = bn128.G1.toObject(bn128.G1.toAffine(gx1))
             const gy1O = bn128.G1.toObject(bn128.G1.toAffine(gy1))
             const PS = await ethers.getContractFactory("PS");
-            const ps = await PS.deploy({
+            psContract = await PS.deploy({
                 x: [gtildeneg[0][1], gtildeneg[0][0]],
                 y: [gtildeneg[1][1], gtildeneg[1][0]]
             }, {x: gx1O[0], y: gx1O[1]}, {x: gy1O[0], y: gy1O[1]});
-            await ps.deployed();
-
+            await psContract.deployed();
+        })
+        it("Sign ", async function () {
             // sign
-            const m = bn128.Fr.random()
+            m = bn128.Fr.random()
             const xym = bn128.Fr.add(bn128.Fr.mul(y, m), x)
             const preh = bn128.Fr.random()
-            const h = bn128.G1.timesFr(bn128.G1.one, bn128.Fr.e(preh))
-            const h2 = bn128.G1.timesFr(h, bn128.Fr.e(xym))
+            h = bn128.G1.timesFr(bn128.G1.one, bn128.Fr.e(preh))
+            h2 = bn128.G1.timesFr(h, bn128.Fr.e(xym))
             const sig = (h, h2)
+        })
 
+        it("Verify ", async function () {
             //verify
             const ym = bn128.G2.timesFr(gy, bn128.Fr.e(m))
             const p1 = bn128.pairing(h, bn128.G2.add(ym, gx))
             const p2 = bn128.pairing(h2, g)
             expect(bn128.Gt.eq(p1, p2)).to.eq(true)
-
+        })
+        it("Join ", async function () {
             //joinG
-            const ski = bn128.Fr.random()
+            ski = bn128.Fr.random()
             const tau = bn128.G1.timesFr(bn128.G1.one, bn128.Fr.e(ski))
-            const tautilde = bn128.G2.timesFr(gy, bn128.Fr.e(ski))
+            tautilde = bn128.G2.timesFr(gy, bn128.Fr.e(ski))
             const tauy = bn128.pairing(tau, gy)
             const gtau = bn128.pairing(bn128.G1.one, tautilde)
             expect(bn128.Gt.eq(tauy, gtau)).to.eq(true)
-            const u = bn128.Fr.random()
-            const sigma1 = bn128.G1.timesFr(bn128.G1.one, bn128.Fr.e(u))
-            const sigma2 = bn128.G1.timesFr(bn128.G1.add(bn128.G1.timesFr(bn128.G1.one, bn128.Fr.e(x)), bn128.G1.timesFr(tau, bn128.Fr.e(y))), bn128.Fr.e(u))
+            u = bn128.Fr.random()
+            sigma1 = bn128.G1.timesFr(bn128.G1.one, bn128.Fr.e(u))
+            sigma2 = bn128.G1.timesFr(bn128.G1.add(bn128.G1.timesFr(bn128.G1.one, bn128.Fr.e(x)), bn128.G1.timesFr(tau, bn128.Fr.e(y))), bn128.Fr.e(u))
             const sigma = (sigma1, sigma2)
             const gski = (ski, sigma, bn128.pairing(sigma1, gy))
-
+        })
+        it("Sign", async function () {
             //signG
-            const t = bn128.Fr.random()
-            const k = bn128.Fr.random()
-            const sigma1random = bn128.G1.timesFr(sigma1, bn128.Fr.e(t))
-            const sigma2random = bn128.G1.timesFr(sigma2, bn128.Fr.e(t))
-            const signpairing = bn128.pairing(bn128.G1.timesFr(sigma1random, bn128.Fr.e(k)), gy)
-            const c = bn128.Fr.fromObject(ethers.utils.solidityKeccak256(["bytes", "bytes", "bytes", "bytes"], [sigma1random, sigma2random, signpairing, m]))
-            const s = bn128.Fr.add(k, bn128.Fr.mul(c, ski))
+            t = bn128.Fr.random()
+            k = bn128.Fr.random()
+            sigma1random = bn128.G1.timesFr(sigma1, bn128.Fr.e(t))
+            sigma2random = bn128.G1.timesFr(sigma2, bn128.Fr.e(t))
+            signpairing = bn128.pairing(bn128.G1.timesFr(sigma1random, bn128.Fr.e(k)), gy)
+            c = bn128.Fr.fromObject(ethers.utils.solidityKeccak256(["bytes", "bytes", "bytes", "bytes"], [sigma1random, sigma2random, signpairing, m]))
+            s = bn128.Fr.add(k, bn128.Fr.mul(c, ski))
             const mu = (sigma1random, sigma2random, c, s)
-
+        })
+        it("Verif", async function () {
             //verifG
             let R = bn128.pairing(bn128.G1.timesFr(sigma1random, bn128.Fr.e(c)), gx)
             R = bn128.Gt.mul(R, bn128.pairing(sigma2random, bn128.G2.neg(bn128.G2.timesFr(g, bn128.Fr.e(c)))))
@@ -89,14 +127,16 @@ describe("PS", function () {
             expect(bn128.Gt.eq(R, signpairing)).to.eq(true)
             const _c = bn128.Fr.fromObject(ethers.utils.solidityKeccak256(["bytes", "bytes", "bytes", "bytes"], [sigma1random, sigma2random, R, m]))
             expect(bn128.Fr.eq(_c, c)).to.eq(true)
-
+        })
+        it("Verif Simplified", async function () {
             //verifG simplified
-            const yk = bn128.G2.timesFr(gy, bn128.Fr.e(k))
+            yk = bn128.G2.timesFr(gy, bn128.Fr.e(k))
             const ltmp = bn128.G2.sub(bn128.G2.sub(yk, bn128.G2.timesFr(gx, bn128.Fr.e(c))), bn128.G2.timesFr(gy, bn128.Fr.e(s)))
             const lpairing = bn128.pairing(sigma1random, ltmp)
-            const rpairing = bn128.pairing(bn128.G1.neg(bn128.G1.timesFr(sigma2random, bn128.Fr.e(c))), g)
+            rpairing = bn128.pairing(bn128.G1.neg(bn128.G1.timesFr(sigma2random, bn128.Fr.e(c))), g)
             expect(bn128.Gt.eq(lpairing, rpairing)).to.eq(true)
-
+        })
+        it("Verif helped", async function () {
             //verifG helped
             const lpairingTest = bn128.pairing(sigma1random, bn128.G2.add(yk, gx))
             const rpairingTest = bn128.pairing(bn128.G1.timesFr(sigma1random, bn128.Fr.e(bn128.Fr.add(bn128.Fr.mul(y, k), x))), g)
@@ -104,10 +144,11 @@ describe("PS", function () {
 
             const exponent = bn128.Fr.add(bn128.Fr.mul(bn128.Fr.mul(preg, x), c), bn128.Fr.mul(bn128.Fr.mul(preg, y), bn128.Fr.sub(s, k)))
             expect(bn128.Gt.eq(bn128.pairing(bn128.G1.timesFr(sigma1random, bn128.Fr.neg(exponent)), bn128.G2.g), rpairing)).to.eq(true)
-            const sigma12 = bn128.G2.timesFr(bn128.G2.one, bn128.Fr.e(u))
+            sigma12 = bn128.G2.timesFr(bn128.G2.one, bn128.Fr.e(u))
             const lpairingTest2 = bn128.pairing(bn128.G1.sub(bn128.G1.timesFr(gy1, bn128.Fr.e(bn128.Fr.sub(k, s))), bn128.G1.timesFr(gx1, bn128.Fr.e(c))), bn128.G2.timesFr(sigma12, bn128.Fr.e(t)))
             expect(bn128.Gt.eq(lpairingTest2, rpairing)).to.eq(true)
-
+        })
+        it("Verif with solidity pairing", async function () {
             //verif with solidity pairing
             let e1a = bn128.G1.sub(bn128.G1.timesFr(gy1, bn128.Fr.e(bn128.Fr.sub(k, s))), bn128.G1.timesFr(gx1, bn128.Fr.e(c)))
             e1a = bn128.G1.toObject(bn128.G1.toAffine(e1a))
@@ -117,7 +158,9 @@ describe("PS", function () {
 
             const result = await lib.bn256CustomCheckPairing([e1a[0], e1a[1], e1b[0][1], e1b[0][0], e1b[1][1], e1b[1][0], e2a[0], e2a[1], e2b[0][1], e2b[0][0], e2b[1][1], e2b[1][0]])
             expect(result).to.eq(true)
+        })
 
+        it("Verif with solidity verify function", async function () {
             //verif with solidity verify function
             const ymink = bn128.G1.neg(bn128.G1.timesFr(gy1, bn128.Fr.e(k)))
             const yminkO = bn128.G1.toObject(bn128.G1.toAffine(ymink))
@@ -129,7 +172,7 @@ describe("PS", function () {
             const sigma2randomc = bn128.G1.timesFr(sigma2random, bn128.Fr.e(c))
             const sigma2randomcO = bn128.G1.toObject(bn128.G1.toAffine(sigma2randomc))
 
-            const _resVerif2 = await ps.verify(bn128.Fr.toObject(c), {
+            const _resVerif2 = await psContract.verify(bn128.Fr.toObject(c), {
                 x: yminkO[0],
                 y: yminkO[1]
             }, bn128.Fr.toObject(s), {
@@ -139,13 +182,13 @@ describe("PS", function () {
             const resVerif2 = await _resVerif2.wait()
             console.log("Gas used for ps verification function " + resVerif2.gasUsed.toString())
             expect(resVerif2.events[resVerif2.events.length - 1].args.result).to.eq(true)
-
+        })
+        it("Open signature", async function () {
             //openG
             let lopenpairing = bn128.pairing(sigma2random, g)
             lopenpairing = bn128.Gt.mul(lopenpairing, bn128.pairing(bn128.G1.neg(sigma1random), gx))
             let ropenpairing = bn128.pairing(sigma1random, tautilde)
             expect(bn128.Gt.eq(lopenpairing, ropenpairing)).to.eq(true)
-
         })
     });
 });
