@@ -72,9 +72,10 @@ contract PS {
         bytes32 hashed2 = bytes32(uint(hashed) % FIELD_MODULUS);
         //emit Debug(hashed2);
         bool hashCheck = (bytes32(c) == hashed2);
+        emit Debug(hashed);
         emit Debug(hashed2);
         emit Debug2(sigma1.x[0], sigma1.x[1], sigma1.y[0], sigma1.y[1], sigma2.x, sigma2.y, ymink.x, ymink.y, message, hashCheck);
-        return true;
+        return hashCheck;
     }
 
 }

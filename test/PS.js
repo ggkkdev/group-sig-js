@@ -97,7 +97,8 @@ describe("PS", function () {
             ymink = bn128.G1.neg(bn128.G1.timesFr(gy1, bn128.Fr.e(k)))
             const yminkO= bn128.G1.toObject(bn128.G1.toAffine(ymink))
             //c = bn128.Fr.fromObject(ethers.utils.solidityKeccak256(["bytes", "bytes", "bytes", "bytes"], [sigma1random, sigma2random, sigma1randomk, m]))
-            c = bn128.G1.F.fromObject(ethers.utils.solidityKeccak256(["uint", "uint","uint", "uint", "uint", "uint", "uint", "uint", "bytes32"], [sigma1random2O[0][1],sigma1random2O[0][0], sigma1random2O[1][1],sigma1random2O[1][0],sigma2randomO[0], sigma2randomO[1], yminkO[0], yminkO[1], m]))
+            c = bn128.Fr.fromObject(ethers.utils.solidityKeccak256(["uint", "uint","uint", "uint", "uint", "uint", "uint", "uint", "bytes32"], [sigma1random2O[0][1],sigma1random2O[0][0], sigma1random2O[1][1],sigma1random2O[1][0],sigma2randomO[0], sigma2randomO[1], yminkO[0], yminkO[1], m]))
+            //const realc = ethers.utils.solidityKeccak256(["uint", "uint","uint", "uint", "uint", "uint", "uint", "uint", "bytes32"], [sigma1random2O[0][1],sigma1random2O[0][0], sigma1random2O[1][1],sigma1random2O[1][0],sigma2randomO[0], sigma2randomO[1], yminkO[0], yminkO[1], m])
             s = bn128.Fr.add(k, bn128.Fr.mul(c, ski))
             const mu = (sigma1random, sigma2random, c, s)
         })
@@ -162,7 +163,7 @@ describe("PS", function () {
             const resVerif2 = await _resVerif2.wait()
             console.log("Gas used for ps verification function " + resVerif2.gasUsed.toString())
             //c = bn128.Fr.fromObject(ethers.utils.solidityKeccak256(["uint", "uint","uint", "uint", "uint", "uint", "uint", "uint", "bytes32"], [sigma1random2O[0][1],sigma1random2O[0][0], sigma1random2O[1][1],sigma1random2O[1][0],sigma2randomO[0], sigma2randomO[1], yminkO[0], yminkO[1], m]))
-            const event1=resVerif2.events[1].args
+            const event1=resVerif2.events[2].args
             expect(sigma1random2O[0][1]).to.eq(event1.a)
             expect(sigma1random2O[0][0]).to.eq(event1.b)
             expect(sigma1random2O[1][1]).to.eq(event1.c)
@@ -181,7 +182,7 @@ describe("PS", function () {
             //bn128.Fr.fromObject(
             const realc = ethers.utils.solidityKeccak256(["uint", "uint","uint", "uint", "uint", "uint", "uint", "uint", "bytes32"], [sigma1random2O[0][1],sigma1random2O[0][0], sigma1random2O[1][1],sigma1random2O[1][0],sigma2randomO[0], sigma2randomO[1], yminkO[0], yminkO[1], m])
             expect(realc).to.eq(hashFromSolidityHex)
-            expect(ethers.utils.hexlify(bn128.G1.F.toObject(bn128.G1.F.fromObject(hashFromSolidity))),resVerif2.events[0].args.hash )
+            expect(ethers.utils.hexlify(bn128.G1.F.toObject(bn128.G1.F.fromObject(hashFromSolidity))),resVerif2.events[1].args.hash )
             //const reshash=bn128.Fr.fromObject(ethers.utils.hexlify(c))==resVerif2.events[0].args.hash
             expect(resVerif2.events[resVerif2.events.length - 1].args.resultPairing).to.eq(true)
             expect(resVerif2.events[resVerif2.events.length - 1].args.resultHash).to.eq(true)
