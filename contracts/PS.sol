@@ -18,7 +18,8 @@ contract PS {
         uint[2] y;
     }
 
-    uint256 internal constant FIELD_MODULUS = 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47;
+    //uint256 internal constant FIELD_MODULUS = 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47;
+    uint256 internal constant FIELD_MODULUS = 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001;
     // Generator coordinate `x` of the EC curve
     uint256 public constant GX = 1;
     // Generator coordinate `y` of the EC curve

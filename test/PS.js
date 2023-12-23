@@ -182,6 +182,8 @@ describe("PS", function () {
             //bn128.Fr.fromObject(
             const realc = ethers.utils.solidityKeccak256(["uint", "uint","uint", "uint", "uint", "uint", "uint", "uint", "bytes32"], [sigma1random2O[0][1],sigma1random2O[0][0], sigma1random2O[1][1],sigma1random2O[1][0],sigma2randomO[0], sigma2randomO[1], yminkO[0], yminkO[1], m])
             expect(realc).to.eq(hashFromSolidityHex)
+            //ethers.utils.hexlify(c)==ethers.utils.hexlify(bn128.Fr.fromObject(realc))
+            // c = bn128.Fr.fromObject(ethers.utils.solidityKeccak256(["uint", "uint","uint", "uint", "uint", "uint", "uint", "uint", "bytes32"], [sigma1random2O[0][1],sigma1random2O[0][0], sigma1random2O[1][1],sigma1random2O[1][0],sigma2randomO[0], sigma2randomO[1], yminkO[0], yminkO[1], m]))
             expect(ethers.utils.hexlify(bn128.G1.F.toObject(bn128.G1.F.fromObject(hashFromSolidity))),resVerif2.events[1].args.hash )
             //const reshash=bn128.Fr.fromObject(ethers.utils.hexlify(c))==resVerif2.events[0].args.hash
             expect(resVerif2.events[resVerif2.events.length - 1].args.resultPairing).to.eq(true)

@@ -1,3 +1,3 @@
 # PS signature
 
-gas used for signature verification: 184576.
+gas used for signature verification: 188470.
