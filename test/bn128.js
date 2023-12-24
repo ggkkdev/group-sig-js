@@ -57,15 +57,21 @@ describe("bn128", function () {
         })
         it("Basic check on pairings4", async function () {
             const {bn128} = await loadFixture(initFixture);
-            const c = ethers.utils.solidityKeccak256(["uint"], [123])
+            const c = bn128.G1.F.toObject(bn128.G1.F.fromObject(ethers.utils.solidityKeccak256(["uint"], [123])))
+            const d=bn128.G1.F.toObject(bn128.G1.F.random())
+            const cdmod=c*d%bn128.Fr.p
+
             const g1a = bn128.G1.timesScalar(bn128.G1.g, c);
-            const g1b = bn128.G1.timesScalar(bn128.G1.g, 1);
-            const g2a = bn128.G2.timesScalar(bn128.G2.g, 1);
-            const g2b = bn128.G2.timesScalar(bn128.G2.g, c);
+            const g2a = bn128.G2.timesScalar(bn128.G2.g, d);
             const ea = bn128.pairing(g1a, g2a)
+            const g1b = bn128.G1.timesScalar(bn128.G1.g, 1);
+            const g2b = bn128.G2.timesScalar(bn128.G2.g,cdmod);
             const eb = bn128.pairing(g1b, g2b)
-            //console.log(bn128.)
-            expect(bn128.F12.eq(ea, eb)).to.eq(true);
+            //bn128.Gt.eq(ea,bn128.pairing(g1b, bn128.G2.timesScalar(bn128.G2.g,bn128.Fr.mul(bn128.Fr.e(c),bn128.Fr.e(d)))))
+            //bn128.Gt.eq(ea,bn128.pairing(g1b, bn128.G2.timesScalar(bn128.G2.g, c*d%bn128.Fr.p)))
+            //bn128.G1.eq(bn128.G1.timesScalar(bn128.G1.g, c*d), bn128.G1.timesFr(bn128.G1.g,bn128.Fr.mul(bn128.Fr.e(d),bn128.Fr.e(c))))
+            //bn128.Fr.toObject(bn128.Fr.mul(bn128.Fr.e(d),bn128.Fr.e(c)))==bn128.G1.F.toObject(bn128.G1.F.mul(bn128.G1.F.e(c),bn128.G1.F.e(d)))
+            expect(bn128.Gt.eq(ea, eb)).to.eq(true);
         })
 
         it("Basic check on pairings3", async function () {
