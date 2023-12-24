@@ -55,6 +55,18 @@ describe("bn128", function () {
             //console.log(bn128.)
             expect(bn128.F12.eq(ea, eb)).to.eq(true);
         })
+        it("Basic check on pairings4", async function () {
+            const {bn128} = await loadFixture(initFixture);
+            const c = ethers.utils.solidityKeccak256(["uint"], [123])
+            const g1a = bn128.G1.timesScalar(bn128.G1.g, c);
+            const g1b = bn128.G1.timesScalar(bn128.G1.g, 1);
+            const g2a = bn128.G2.timesScalar(bn128.G2.g, 1);
+            const g2b = bn128.G2.timesScalar(bn128.G2.g, c);
+            const ea = bn128.pairing(g1a, g2a)
+            const eb = bn128.pairing(g1b, g2b)
+            //console.log(bn128.)
+            expect(bn128.F12.eq(ea, eb)).to.eq(true);
+        })
 
         it("Basic check on pairings3", async function () {
             const {bn128} = await loadFixture(initFixture);
