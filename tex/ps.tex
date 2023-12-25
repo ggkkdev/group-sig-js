@@ -65,18 +65,7 @@
     \end{align}
 
     \begin{optimization}
-        From \ref{eq:R}, we want to check:
-        \begin{align}
-            e(\sigma_1, \tilde{Y})^{k} & \stackrel{?}{=}(e(\sigma_1^{-1}, \tilde{X})\cdot e(\sigma_2, \tilde{g}))^{-c}\cdot e(\sigma_1^s, \tilde{Y})
-        \end{align}
-        Exchanging the groups for signatures and public keys we have:
-        \begin{align}
-            e( \tilde{Y},\sigma_1)^{k} & \stackrel{?}{=}(e(\tilde{X},\sigma_1^{-1})\cdot e( \tilde{g},\sigma_2))^{-c}\cdot e( \tilde{Y},\sigma_1^s)\\
-            e(\tilde{X},\sigma_1)^{-c}\cdot e( \tilde{Y},\sigma_1)^{k} \cdot e( \tilde{Y},\sigma_1^s)^{-1} & \stackrel{?}{=} e( \tilde{g},\sigma_2)^{-c}\\
-            e(\tilde{X}^{-c}\tilde{Y}^{k-s},\sigma_1) & \stackrel{?}{=} e( \tilde{g},\sigma_2)^{-c}\\
-            e(\tilde{X}^{c}\tilde{Y}^{s-k},\sigma_1) & \stackrel{?}{=} e( \tilde{g}^{c},\sigma_2)
-        \end{align}
-        Finally the verification takes one pairing check and one hash check.
+        The verification takes one pairing check and one hash check.
         \begin{align}
             e(\tilde{X}^c\tilde{Y}^{s-k}, \sigma_1)&\stackrel{?}{=}  e(\tilde{g}^c, \sigma_2)\\
             c & \stackrel{?}{=} H(\sigma_1, \sigma_2,  \tilde{Y}^{-k}, m)
@@ -92,6 +81,21 @@
             e(\tilde{X}\tilde{Y}^{sk_i}, \sigma_1) &\stackrel{?}{=}  e(\tilde{g}, \sigma_2)
         \end{align}
         Which is a valid signature on $sk_i$.
+    \end{optimization}
+
+    \subsubsection{Derivation from original}
+    \begin{optimization}
+        From \ref{eq:R}, we want to check:
+        \begin{align}
+            e(\sigma_1, \tilde{Y})^{k} & \stackrel{?}{=}(e(\sigma_1^{-1}, \tilde{X})\cdot e(\sigma_2, \tilde{g}))^{-c}\cdot e(\sigma_1^s, \tilde{Y})
+        \end{align}
+        Exchanging the groups for signatures and public keys we have:
+        \begin{align}
+            e( \tilde{Y},\sigma_1)^{k} & \stackrel{?}{=}(e(\tilde{X},\sigma_1^{-1})\cdot e( \tilde{g},\sigma_2))^{-c}\cdot e( \tilde{Y},\sigma_1^s)\\
+            e(\tilde{X},\sigma_1)^{-c}\cdot e( \tilde{Y},\sigma_1)^{k} \cdot e( \tilde{Y},\sigma_1^s)^{-1} & \stackrel{?}{=} e( \tilde{g},\sigma_2)^{-c}\\
+            e(\tilde{X}^{-c}\tilde{Y}^{k-s},\sigma_1) & \stackrel{?}{=} e( \tilde{g},\sigma_2)^{-c}\\
+            e(\tilde{X}^{c}\tilde{Y}^{s-k},\sigma_1) & \stackrel{?}{=} e( \tilde{g}^{c},\sigma_2)
+        \end{align}
     \end{optimization}
 
     \subsubsection{Cost}
