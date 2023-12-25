@@ -27,12 +27,12 @@ describe("PS", function () {
             bn128 = fixture.bn128;
             lib = fixture.lib
             //Setup
-            preg = bn128.G1.F.toObject(bn128.G1.F.random())
-            x = bn128.G1.F.toObject(bn128.G1.F.random())
-            y = bn128.G1.F.toObject(bn128.G1.F.random())
-            gtilde = bn128.G1.timesScalar(bn128.G1.one, preg)
-            gx = bn128.G1.timesScalar(gtilde, x)
-            gy = bn128.G1.timesScalar(gtilde, y)
+            preg =bn128.Fr.random()
+            x = bn128.Fr.random()
+            y = bn128.Fr.random()
+            gtilde = bn128.G1.timesFr(bn128.G1.one, preg)
+            gx = bn128.G1.timesFr(gtilde, x)
+            gy = bn128.G1.timesFr(gtilde, y)
             const gsk = (x, y)
             const gpk = (gtilde, gx, gy)
         })
@@ -48,59 +48,43 @@ describe("PS", function () {
             }, {x: gxO[0], y: gxO[1]}, {x: gyO[0], y: gyO[1]});
             await psContract.deployed();
         })
-        /*        it("Sign ", async function () {
-                    // sign
-                    m = bn128.Fr.random()
-                    const xym = bn128.Fr.add(bn128.Fr.mul(y, m), x)
-                    const preh = bn128.Fr.random()
-                    h = bn128.G1.timesFr(bn128.G1.one, bn128.Fr.e(preh))
-                    h2 = bn128.G1.timesFr(h, bn128.Fr.e(xym))
-                    const sig = (h, h2)
-                })
 
-                it("Verify ", async function () {
-                    //verify
-                    const ym = bn128.G2.timesFr(gy, bn128.Fr.e(m))
-                    const p1 = bn128.pairing(h, bn128.G2.add(ym, gx))
-                    const p2 = bn128.pairing(h2, g)
-                    expect(bn128.Gt.eq(p1, p2)).to.eq(true)
-                })*/
         it("Join ", async function () {
             //joinG
-            ski = bn128.G1.F.toObject(bn128.G1.F.random())
-            const tau = bn128.G2.timesScalar(bn128.G2.one, ski)
-            tautilde = bn128.G1.timesScalar(gy, ski)
+            ski = bn128.Fr.random()
+            const tau = bn128.G2.timesFr(bn128.G2.one, ski)
+            tautilde = bn128.G1.timesFr(gy, ski)
             /*            const tauy = bn128.pairing(tau, gy)
                         const gtau = bn128.pairing(bn128.G1.one, tautilde)
                         expect(bn128.Gt.eq(tauy, gtau)).to.eq(true)*/
-            u = bn128.G1.F.toObject(bn128.G1.F.random())
-            sigma1 = bn128.G2.timesScalar(bn128.G2.one, u)
-            sigma2 = bn128.G2.timesScalar(bn128.G2.add(bn128.G2.timesScalar(bn128.G2.one, x), bn128.G2.timesScalar(tau, y)), u)
+            u = bn128.Fr.random()
+            sigma1 = bn128.G2.timesFr(bn128.G2.one, u)
+            sigma2 = bn128.G2.timesFr(bn128.G2.add(bn128.G2.timesFr(bn128.G2.one, x), bn128.G2.timesFr(tau, y)), u)
             const sigma = (sigma1, sigma2)
             const gski = (ski, sigma)
         })
         it("Sign", async function () {
             //signG
-            m = bn128.G1.F.random()
-            t = bn128.G1.F.toObject(bn128.G1.F.random())
-            k = bn128.G1.F.toObject(bn128.G1.F.random())
-            sigma1random = bn128.G2.timesScalar(sigma1, t)
+            m = bn128.Fr.random()
+            t = bn128.Fr.random()
+            k = bn128.Fr.random()
+            sigma1random = bn128.G2.timesFr(sigma1, t)
             //const sigma1randomO = bn128.G1.toObject(bn128.G1.toAffine(sigma1random))
             //sigma1random2 = bn128.G2.timesFr(bn128.G2.one, bn128.Fr.e(bn128.Fr.mul(u, t)))
             const sigma1randomO = bn128.G2.toObject(bn128.G2.toAffine(sigma1random))
-            sigma2random = bn128.G2.timesScalar(sigma2, t)
+            sigma2random = bn128.G2.timesFr(sigma2, t)
             const sigma2randomO = bn128.G2.toObject(bn128.G2.toAffine(sigma2random))
             //signpairing = bn128.pairing(bn128.G1.timesFr(sigma1random, bn128.Fr.e(k)), gy)
             //c = bn128.Fr.fromObject(ethers.utils.solidityKeccak256(["bytes", "bytes", "bytes", "bytes"], [sigma1random, sigma2random, signpairing, m]))
             //sigma1randomk = bn128.G2.timesFr(sigma1random, bn128.Fr.e(k))
-            ymink = bn128.G1.neg(bn128.G1.timesScalar(gy, k))
+            ymink = bn128.G1.neg(bn128.G1.timesFr(gy, k))
             const yminkO = bn128.G1.toObject(bn128.G1.toAffine(ymink))
             //c = bn128.Fr.fromObject(ethers.utils.solidityKeccak256(["bytes", "bytes", "bytes", "bytes"], [sigma1random, sigma2random, sigma1randomk, m]))
             //c = bn128.Fr.fromObject(ethers.utils.solidityKeccak256(["uint", "uint", "uint", "uint", "uint", "uint", "uint", "uint", "uint", "uint", "bytes32"], [sigma1randomO[0][1], sigma1randomO[0][0], sigma1randomO[1][1], sigma1randomO[1][0], sigma2randomO[0][1], sigma2randomO[0][0], sigma2randomO[1][1], sigma2randomO[1][0], yminkO[0], yminkO[1], m]))
-            c = bn128.G1.F.toObject(bn128.G1.F.fromObject(ethers.utils.solidityKeccak256(["uint", "uint", "uint", "uint", "uint", "uint", "uint", "uint", "uint", "uint", "bytes32"], [sigma1randomO[0][1], sigma1randomO[0][0], sigma1randomO[1][1], sigma1randomO[1][0], sigma2randomO[0][1], sigma2randomO[0][0], sigma2randomO[1][1], sigma2randomO[1][0], yminkO[0], yminkO[1], m])))
+            c = bn128.Fr.fromObject(ethers.utils.solidityKeccak256(["uint", "uint", "uint", "uint", "uint", "uint", "uint", "uint", "uint", "uint", "bytes32"], [sigma1randomO[0][1], sigma1randomO[0][0], sigma1randomO[1][1], sigma1randomO[1][0], sigma2randomO[0][1], sigma2randomO[0][0], sigma2randomO[1][1], sigma2randomO[1][0], yminkO[0], yminkO[1], m]))
             //const realc = ethers.utils.solidityKeccak256(["uint", "uint","uint", "uint", "uint", "uint", "uint", "uint", "bytes32"], [sigma1random2O[0][1],sigma1random2O[0][0], sigma1random2O[1][1],sigma1random2O[1][0],sigma2randomO[0], sigma2randomO[1], yminkO[0], yminkO[1], m])
             //s = bn128.G1.F.add(k, bn128.G1.F.mul(c, ski))
-            s =bn128.G1.F.toObject( bn128.G1.F.add(bn128.G1.F.fromObject(k), bn128.G1.F.mul(bn128.G1.F.fromObject(c), bn128.G1.F.fromObject(ski))))
+            s = bn128.Fr.add(k, bn128.Fr.mul(c, ski))
             const mu = (sigma1random, sigma2random, ymink, c, s)
         })
         /*        it("Verif", async function () {
@@ -112,16 +96,16 @@ describe("PS", function () {
                     //const _c = bn128.Fr.fromObject(ethers.utils.solidityKeccak256(["bytes", "bytes", "bytes", "bytes"], [sigma1random, sigma2random, R, m]))
                     //expect(bn128.Fr.eq(_c, c)).to.eq(true)
                 })*/
-        it("Verification pairing", async function () {
+        it("Pairing verification ", async function () {
             //verifG simplified
             //yk = bn128.G1.timesFr(gy, bn128.Fr.e(k))
             //const ltmp = bn128.G1.add(bn128.G1.sub(yk, bn128.G1.timesFr(gx, bn128.Fr.e(c))), bn128.G1.timesFr(gy, bn128.Fr.e(s)))
-            const ltmp = bn128.G1.add(bn128.G1.add(bn128.G1.timesScalar(gx, c), bn128.G1.timesScalar(gy, s)), ymink)
+            const ltmp = bn128.G1.add(bn128.G1.add(bn128.G1.timesFr(gx, c), bn128.G1.timesFr(gy, s)), ymink)
             const lpairing = bn128.pairing(ltmp, sigma1random)
-            rpairing = bn128.pairing(bn128.G1.timesScalar(gtilde, c), sigma2random)
+            rpairing = bn128.pairing(bn128.G1.timesFr(gtilde, c), sigma2random)
             expect(bn128.Gt.eq(lpairing, rpairing)).to.eq(true)
         })
-        it("Verification hash", async function () {
+        it("Hash verification", async function () {
             const yminkO = bn128.G1.toObject(bn128.G1.toAffine(ymink))
             const sigma1randomO = bn128.G2.toObject(bn128.G2.toAffine(sigma1random))
             const sigma2randomO = bn128.G2.toObject(bn128.G2.toAffine(sigma2random))
