@@ -12,22 +12,20 @@ pragma solidity ^0.8.9;
 
 library BN256G1 {
 
-  // Generator coordinate `x` of the EC curve
-  uint256 public constant GX = 1;
-  // Generator coordinate `y` of the EC curve
-  uint256 public constant GY = 2;
-  // Constant `a` of EC equation
-  uint256 internal constant AA = 0;
-  // Constant `b` of EC equation
-  uint256 internal constant BB = 3;
+  struct G1Point {
+    uint x;
+    uint y;
+  }
+
+  struct G2Point {
+    uint[2] x;
+    uint[2] y;
+  }
+
   // Prime number of the curve
-  uint256 internal constant PP = 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47;
+  uint256 public constant PP = 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47;
   // Order of the curve
-  uint256 internal constant NN = 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001;
-
-  /// This is 0xf1f5883e65f820d099915c908786b9d3f58714d70a38f4c22ca2bc723a70f263, the last mulitple of the modulus before 2^256
-  uint256 internal constant LAST_MULTIPLE_OF_PP_LOWER_THAN_2_256 = 0xf1f5883e65f820d099915c908786b9d3f58714d70a38f4c22ca2bc723a70f263;
-
+  uint256 public constant NN = 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001;
 
   /// @dev  computes P + Q
   /// @param input: 4 values of 256 bits each
@@ -36,7 +34,7 @@ library BN256G1 {
   ///  *) x-coordinate of point Q
   ///  *) y-coordinate of point Q
   /// @return An array with x and y coordinates of P+Q.
-  function add(uint256[4] memory input) internal returns (uint256, uint256) {
+  function add(uint256[4] memory input) internal returns ( G1Point memory) {
     bool success;
     uint256[2] memory result;
     assembly {
@@ -48,7 +46,7 @@ library BN256G1 {
     }
     require(success, "bn256 addition failed");
 
-    return (result[0], result[1]);
+    return G1Point({x:result[0], y:result[1]});
   }
 
   /// @dev  computes P*k.
@@ -57,7 +55,7 @@ library BN256G1 {
   ///  *) y-coordinate of point P
   ///  *) scalar k.
   /// @return An array with x and y coordinates of P*k.
-  function multiply(uint256[3] memory input) internal returns (uint256, uint256) {
+  function multiply(uint256[3] memory input) internal returns (G1Point memory) {
     bool success;
     uint256[2] memory result;
     assembly {
@@ -68,7 +66,7 @@ library BN256G1 {
       success := call(not(0), 0x07, 0, input, 96, result, 64)
     }
     require(success, "elliptic curve multiplication failed");
-    return (result[0], result[1]);
+    return G1Point({x:result[0], y:result[1]});
   }
 
 
@@ -149,6 +147,5 @@ library BN256G1 {
     }
     revert("Wrong pairing");
   }
-
 
 }
