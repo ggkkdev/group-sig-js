@@ -4,13 +4,12 @@ pragma solidity ^0.8.9;
 import "./BN256G1.sol";
 
 /**
- * @title BBS
- * @dev A library for verifying BBS signatures.
+ * @title PS signatures
+ * @dev A library for verifying PS signatures.
  */
 contract PS {
 
     event Verification(uint c, uint s, BN256G1.G1Point ymink, BN256G1.G2Point sigma2, BN256G1.G2Point sigma1, bool resultPairing, bool resultHash);
-    event Debug(bytes32 hash);
 
     BN256G1.G1Point gtildeneg;
     BN256G1.G1Point X;

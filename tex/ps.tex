@@ -1,0 +1,117 @@
+%! Author = guillaumequispe
+%! Date = 22/12/2023
+
+% Preamble
+\documentclass[11pt]{article}
+
+% Packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{xcolor}
+
+\newenvironment{optimization}{\par\color{blue}}{\par}
+
+% Document
+\begin{document}
+
+    \section{PS optimization}
+
+    \subsection{Setup}
+    \begin{align}
+        pp  & \leftarrow (p,\mathbb{G}_1,\mathbb{G}_2,\mathbb{G}_T,e) \\
+        g &\leftarrow \mathbb{G}_1\\
+        (x,y) &  \leftarrow \mathbb{Z}_p^{2}, \tilde{g} \leftarrow \mathbb{G}_2 :
+        (\tilde{X}, \tilde{Y})  \leftarrow (\tilde{g}^x, \tilde{g}^y)\\
+        sk &=(x,y), pk=(\tilde{g}, \tilde{X}, \tilde{Y}))
+    \end{align}
+    \begin{optimization}
+        g &\leftarrow \mathbb{G}_2\\
+        (x,y) &  \leftarrow \mathbb{Z}_p^{2}, \tilde{g} \leftarrow \mathbb{G}_1 :
+        (\tilde{X}, \tilde{Y})  \leftarrow (\tilde{g}^x, \tilde{g}^y)
+    \end{optimization}
+
+    \subsection{Join}
+    \begin{align}
+        sk_i \leftarrow \mathbb{Z}_p &:
+        (\tau, \tilde{\tau})\leftarrow (g^{sk_i}, \tilde{Y}^{sk_i}))\\
+        u \leftarrow \mathbb{Z}_p &: \sigma \leftarrow(\sigma_1, \sigma_2) \leftarrow (g^u, (g^x \tau^y )^u))\\
+        gsk_i &=(sk_i,\sigma, e(\sigma_1, \tilde{Y}), pk=(\tilde{g}, \tilde{X}, \tilde{Y}))
+    \end{align}
+
+    \subsection{Sign}
+    \begin{align}
+        t &\leftarrow \mathbb{Z}_p\\
+        (\sigma_1^{\prime}, \sigma_2^{\prime})
+        &\leftarrow (\sigma_1^t, \sigma_2^t)\\
+        k \leftarrow \mathbb{Z}_p &: e(\sigma_1^{\prime}, \tilde{Y})^k \leftarrow e(\sigma_1, \tilde{Y})^{kt} \\
+        c &\leftarrow H(\sigma_1^{\prime}, \sigma_2^{\prime}, e(\sigma_1^{\prime}, \tilde{Y})^{k}, m)\\
+        s &\leftarrow k+ c \cdot sk_i \\
+        \mu(m) &=(\sigma_1^{\prime}, \sigma_2^{\prime}, c, s) \in (\mathbb{G}_1^2 \times \mathbb{Z}_p^2)
+    \end{align}
+    \begin{optimization}
+        Here we add the G1 element $\tilde{Y}^{-k}$ to the signature to be able to verify it with pairing check\\
+        \mu(m) =(\sigma_1^{\prime}, \sigma_2^{\prime}, \tilde{Y}^{-k}, c, s) \in (\mathbb{G}_1^3 \times \mathbb{Z}_p^2)
+    \end{optimization}
+
+    \subsection{Verify}
+    \begin{align}
+        R &\leftarrow (e(\sigma_1^{-1}, \tilde{X})\cdot e(\sigma_2, \tilde{g}))^{-c}\cdot e(\sigma_1^s, \tilde{Y}) \label{eq:R}\\
+        c & \stackrel{?}{=} H(\sigma_1, \sigma_2,R, m)
+    \end{align}
+    Correctness comes from :
+    \begin{align}
+        e(\sigma_1, \tilde{X}\cdot \tilde{Y}^m)=e(\sigma_2, \tilde{g})
+    \end{align}
+
+    \begin{optimization}
+        From \ref{eq:R}, we want to check:
+        \begin{align}
+            e(\sigma_1, \tilde{Y})^{k} & \stackrel{?}{=}(e(\sigma_1^{-1}, \tilde{X})\cdot e(\sigma_2, \tilde{g}))^{-c}\cdot e(\sigma_1^s, \tilde{Y})
+        \end{align}
+        Exchanging the groups for signatures and public keys we have:
+        \begin{align}
+            e( \tilde{Y},\sigma_1)^{k} & \stackrel{?}{=}(e(\tilde{X},\sigma_1^{-1})\cdot e( \tilde{g},\sigma_2))^{-c}\cdot e( \tilde{Y},\sigma_1^s)\\
+            e(\tilde{X},\sigma_1)^{-c}\cdot e( \tilde{Y},\sigma_1)^{k} \cdot e( \tilde{Y},\sigma_1^s)^{-1} & \stackrel{?}{=} e( \tilde{g},\sigma_2)^{-c}\\
+            e(\tilde{X}^{-c}\tilde{Y}^{k-s},\sigma_1) & \stackrel{?}{=} e( \tilde{g},\sigma_2)^{-c}\\
+            e(\tilde{X}^{c}\tilde{Y}^{s-k},\sigma_1) & \stackrel{?}{=} e( \tilde{g}^{c},\sigma_2)
+        \end{align}
+        Finally the verification takes one pairing check and one hash check.
+        \begin{align}
+            e(\tilde{X}^c\tilde{Y}^{s-k}, \sigma_1)&\stackrel{?}{=}  e(\tilde{g}^c, \sigma_2)\\
+            c & \stackrel{?}{=} H(\sigma_1, \sigma_2,  \tilde{Y}^{-k}, m)
+        \end{align}
+    \end{optimization}
+
+    \subsubsection{Completeness}
+    \begin{optimization}
+        \begin{align}
+            e(\tilde{X}^c\tilde{Y}^{s-k}, \sigma_1)&\stackrel{?}{=}  e(\tilde{g}^c, \sigma_2)\\
+            e(\tilde{X}^c\tilde{Y}^{c\cdot sk_i}, \sigma_1)&\stackrel{?}{=}  e(\tilde{g}^c, \sigma_2)\\
+            e(\tilde{X}\tilde{Y}^{sk_i}, \sigma_1)^c &\stackrel{?}{=}  e(\tilde{g}, \sigma_2)^c\\
+            e(\tilde{X}\tilde{Y}^{sk_i}, \sigma_1) &\stackrel{?}{=}  e(\tilde{g}, \sigma_2)
+        \end{align}
+        Which is a valid signature on $sk_i$.
+    \end{optimization}
+
+    \subsubsection{Cost}
+    \begin{optimization}
+        The on-chain verification is constrained on:
+        \begin{itemize}
+            \item efficiency in terms of gas
+            \item operations with only pairing check possible, no pairing operation
+        \end{itemize}
+        It needs 3 exponentiations (scalar multiplications for ECC ) and 2 multiplications (point additions for ECC), along with the hash check operation.
+    \end{optimization}
+
+    \subsection{Open}
+    \begin{align}
+        \forall (i, \tau_i, \tilde{\tau_i}) :
+        e(\sigma_2,\tilde{g})\cdot e(\sigma_1, \tilde{X})^{-1}\stackrel{?}{=} e(\sigma_1, \tilde{\tau_i})
+    \end{align}
+    \begin{optimization}
+        \begin{align}
+            \forall (i, \tau_i, \tilde{\tau_i}) :
+            e(\tilde{g},\sigma_2)\cdot e( \tilde{X}, \sigma_1)^{-1}\stackrel{?}{=} e( \tilde{\tau_i},\sigma_1)
+        \end{align}
+    \end{optimization}
+\end{document}
