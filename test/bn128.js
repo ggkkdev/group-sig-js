@@ -1,15 +1,6 @@
-// This is an example test file. Hardhat will run every *.js file in `test/`,
-// so feel free to add new ones.
-
-// Hardhat tests are normally written with Mocha and Chai.
-
-// We import Chai to use its asserting functions here.
 const {expect, assert} = require("chai");
 const {buildBn128} = require("ffjavascript");
 
-// We use `loadFixture` to share common setups (or fixtures) between tests.
-// Using this simplifies your tests and makes them run faster, by taking
-// advantage or Hardhat Network's snapshot functionality.
 const {loadFixture} = require("@nomicfoundation/hardhat-network-helpers");
 
 describe("bn128", function () {
@@ -24,12 +15,8 @@ describe("bn128", function () {
         return {lib, owner, addr1, addr2, bn128};
     }
 
-    // You can nest describe calls to create subsections.
     describe("Deployment", function () {
-        // `it` is another Mocha function. This is the one you use to define your
-        // tests. It receives the test name, and a callback function.
-//
-        // If the callback function is async, Mocha will `await` it.
+
         it("Basic check on pairings", async function () {// We use loadFixture to setup our environment, and then assert that
             // things went well
             const {owner, bn128} = await loadFixture(initFixture);
