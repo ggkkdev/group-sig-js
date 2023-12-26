@@ -17,7 +17,7 @@ describe("PS", function () {
     }
 
     // You can nest describe calls to create subsections.
-    describe("Test ps workflow", function () {
+    describe("Test ps original workflow", function () {
         let gx1, gy1, bn128, lib, g, y, x, m, gy, gx, h, h2, sigma1, sigma2, ski, sigma1random, sigma2random, c, s,
             signpairing, yk, k, preg, rpairing, u, t, sigma12, tautilde, psContract,sigma1randomk, ymink,sigma1random2;
 
@@ -37,18 +37,6 @@ describe("PS", function () {
             gx1 = bn128.G1.timesFr(bn128.G1.one, bn128.Fr.e(bn128.Fr.mul(x, preg)))
             const gsk = (x, y)
             const gpk = (g, gx, gy)
-        })
-        it("Deploy PS contract ", async function () {
-            //Deploy contract
-            const gtildeneg = bn128.G2.toObject(bn128.G2.toAffine(bn128.G2.neg(g)))
-            const gx1O = bn128.G1.toObject(bn128.G1.toAffine(gx1))
-            const gy1O = bn128.G1.toObject(bn128.G1.toAffine(gy1))
-            const PS = await ethers.getContractFactory("PS");
-            psContract = await PS.deploy({
-                x: [gtildeneg[0][1], gtildeneg[0][0]],
-                y: [gtildeneg[1][1], gtildeneg[1][0]]
-            }, {x: gx1O[0], y: gx1O[1]}, {x: gy1O[0], y: gy1O[1]});
-            await psContract.deployed();
         })
         it("Sign ", async function () {
             // sign

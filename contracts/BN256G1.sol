@@ -34,7 +34,7 @@ library BN256G1 {
   ///  *) x-coordinate of point Q
   ///  *) y-coordinate of point Q
   /// @return An array with x and y coordinates of P+Q.
-  function add(uint256[4] memory input) internal returns ( G1Point memory) {
+  function add(uint256[4] memory input) internal view returns ( G1Point memory) {
     bool success;
     uint256[2] memory result;
     assembly {
@@ -42,7 +42,7 @@ library BN256G1 {
       // 0        number of ether to transfer
       // 128      size of call parameters, i.e. 128 bytes total
       // 64       size of call return value, i.e. 64 bytes / 512 bit for a BN256 curve point
-      success := call(not(0), 0x06, 0, input, 128, result, 64)
+      success := staticcall(not(0), 0x06,input, 128, result, 64)
     }
     require(success, "bn256 addition failed");
 
@@ -55,7 +55,7 @@ library BN256G1 {
   ///  *) y-coordinate of point P
   ///  *) scalar k.
   /// @return An array with x and y coordinates of P*k.
-  function multiply(uint256[3] memory input) internal returns (G1Point memory) {
+  function multiply(uint256[3] memory input) internal view returns (G1Point memory) {
     bool success;
     uint256[2] memory result;
     assembly {
@@ -63,7 +63,7 @@ library BN256G1 {
       // 0        number of ether to transfer
       // 96       size of call parameters, i.e. 96 bytes total (256 bit for x, 256 bit for y, 256 bit for scalar)
       // 64       size of call return value, i.e. 64 bytes / 512 bit for a BN256 curve point
-      success := call(not(0), 0x07, 0, input, 96, result, 64)
+      success := staticcall(not(0), 0x07, input, 96, result, 64)
     }
     require(success, "elliptic curve multiplication failed");
     return G1Point({x:result[0], y:result[1]});
@@ -85,7 +85,7 @@ library BN256G1 {
   ///  *) y real coordinate of point S
   ///  *) y imaginary coordinate of point S
   /// @return true if e(P, Q) = e (R,S).
-  function bn256CheckPairing(uint256[12] memory input) internal returns (bool) {
+  function bn256CheckPairing(uint256[12] memory input) internal view returns (bool) {
     uint256[1] memory result;
     bool success;
     assembly {
@@ -94,7 +94,7 @@ library BN256G1 {
       // 0        since we have an array of fixed length, our input starts in 0
       // 384      size of call parameters, i.e. 12*256 bits == 384 bytes
       // 32       size of result (one 32 byte boolean!)
-      success := call(sub(gas(), 2000), 0x08, 0, input, 384, result, 32)
+      success := staticcall(sub(gas(), 2000), 0x08, input, 384, result, 32)
     }
     require(success, "elliptic curve pairing failed");
     return result[0] == 1;
@@ -116,7 +116,7 @@ library BN256G1 {
   ///  *) y imaginary coordinate of point S
   ///  *) and so forth with additional pairing checks
   /// @return true if e(input[0,1], input[2,3,4,5]) = e(input[6,7], input[8,9,10,11])*e(input[12,13], input[14,15,16,17])...
-  function bn256CheckPairingBatch(uint256[] memory input) internal returns (bool) {
+  function bn256CheckPairingBatch(uint256[] memory input) internal view returns (bool) {
     uint256[1] memory result;
     bool success;
     require(input.length % 6 == 0, "Incorrect input length");
@@ -127,7 +127,7 @@ library BN256G1 {
       // add(input, 0x20) since we have an unbounded array, the first 256 bits refer to its length
       // 384      size of call parameters, i.e. 12*256 bits == 384 bytes
       // 32       size of result (one 32 byte boolean!)
-      success := call(sub(gas(), 2000), 0x08, 0, add(input, 0x20), inLen, result, 32)
+      success := staticcall(sub(gas(), 2000), 0x08, add(input, 0x20), inLen, result, 32)
     }
     require(success, "elliptic curve pairing failed");
     return result[0] == 1;
