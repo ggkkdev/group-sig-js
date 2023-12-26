@@ -28,7 +28,7 @@ describe("PS optimized", function () {
     }
 
     // You can nest describe calls to create subsections.
-    describe("Test ps optmized workflow", function () {
+    describe("Test ps optimized workflow", function () {
         let lib, gtilde, gtildeneg, y, x, m, gy, gx, sigma1, sigma2, ski, sigma1random, sigma2random, c, s,
             k, preg, rpairing, u, t, tautilde, psContract, ymink, psLibContract;
 
@@ -50,14 +50,9 @@ describe("PS optimized", function () {
         })
         it("Deploy PS contract ", async function () {
             //Deploy contract
-            //const PS = await ethers.getContractFactory("PS", {libraries:{PSLib:psLibContract.address}});
             const PS = await ethers.getContractFactory("PS");
             psContract = await PS.deploy(G1ToAffineStruct(bn128, bn128.G1.neg(gtilde)), G1ToAffineStruct(bn128, gx), G1ToAffineStruct(bn128, gy))
             await psContract.deployed();
-            //const l=await psContract.verify(G1ToAffineStruct(bn128,gx))
-            //console.log(l)
-            /*            const result=await psContract.test()
-                        console.log(result)*/
         })
         it("Join ", async function () {
             //joinG
