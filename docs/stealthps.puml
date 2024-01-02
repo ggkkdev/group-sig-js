@@ -1,0 +1,39 @@
+@startuml
+hide footbox
+entity GroupManager as GM
+actor Alice as A
+actor Bob as B
+box "Blockchain"
+entity       StealthContract       as SC
+entity       Token       as T
+entity       GroupVerifier       as V
+endbox
+actor       Charles       as C
+group Group setup
+GM -> V : Setup: send group's public parameters
+A -> GM: Join Request
+GM -> A: Send Alice's signature
+B -> GM: Join Request
+GM -> B: Send Bob's signature
+end
+group Stealth send
+B->SC: Register Stealth meta address
+A->SC: Lookup Bob's meta address
+A->A: Generate stealth address for Bob with ephemeral pk
+A->SC: Send tx for 10 tokens to stealth address and ephemeral pk
+SC->T: Transfer 10 tokens \n from sender \n to stealth contract
+SC->SC: Record event
+end
+group Stealth withdraw
+B->SC: Get stealth address and pk from events
+B-> B: Scan these pks to try to unlock them
+B->B: Prepare tx sending 10 tokens to Charles
+B->B: Sign withdrawing tx with unlocked stealth sk
+B->B: Sign tx with randomized group signature
+B->SC: Send tx
+SC->SC: Stealth signature verification
+SC-> V: Group signature verification
+SC->T: Request transfer 10 tokens \n from stealth contract \n to Charles
+T-> C: Execute transfer
+end
+@enduml

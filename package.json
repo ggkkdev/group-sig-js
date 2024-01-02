@@ -1,20 +1,17 @@
 {
-  "name": "hardhat-boilerplate",
+  "name": "ps-group-sig",
   "version": "1.0.0",
-  "description": "A boilerplate repository to get you started with Hardhat and Ethereum development",
+  "description": "PS group signature",
   "scripts": {
     "test": "hardhat test"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NomicFoundation/hardhat-boilerplate.git"
+    "url": "https://github.com/ggkkdev/group-sig-js.git"
   },
-  "author": "Nomic Foundation",
+  "author": "ggkkdev",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/NomicFoundation/hardhat-boilerplate/issues"
-  },
-  "homepage": "https://github.com/NomicFoundation/hardhat-boilerplate#readme",
+  "homepage": "https://github.com/ggkkdev/group-sig-js",
   "devDependencies": {
     "@ethersproject/abi": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",

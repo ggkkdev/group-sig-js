@@ -1,0 +1,13 @@
+@startuml
+hide footbox
+entity GroupManager as GM
+actor Holder as H
+box "Blockchain"
+entity       Verifier       as V
+endbox
+GM -> V : Setup: send group's public parameters
+H -> GM: Join
+GM -> H: Send user's signature
+H->V: Randomize signature
+V-> V: Signature verification
+@enduml
