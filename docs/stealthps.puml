@@ -3,6 +3,7 @@ hide footbox
 entity GroupManager as GM
 actor Alice as A
 actor Bob as B
+
 box "Blockchain"
 entity       StealthContract       as SC
 entity       Token       as T
@@ -15,6 +16,8 @@ A -> GM: Join Request
 GM -> A: Send Alice's signature
 B -> GM: Join Request
 GM -> B: Send Bob's signature
+C -> GM: Join Request
+GM -> C: Send Charles's signature
 end
 group Stealth send
 B->SC: Register Stealth meta address
@@ -32,7 +35,7 @@ B->B: Sign withdrawing tx with unlocked stealth sk
 B->B: Sign tx with randomized group signature
 B->SC: Send tx
 SC->SC: Stealth signature verification
-SC-> V: Group signature verification
+T-> V: Group signature verification
 SC->T: Request transfer 10 tokens \n from stealth contract \n to Charles
 T-> C: Execute transfer
 end
